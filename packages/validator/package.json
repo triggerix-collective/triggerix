@@ -2,7 +2,7 @@
   "name": "@triggerix/validator",
   "type": "module",
   "version": "0.0.0",
-  "packageManager": "pnpm@11.5.1",
+  "packageManager": "pnpm@11.6.0",
   "description": "Rule validator for Triggerix",
   "license": "MIT",
   "exports": {
