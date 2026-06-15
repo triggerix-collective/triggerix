@@ -5,6 +5,15 @@
   "packageManager": "pnpm@11.6.0",
   "description": "JSON Schema generator for Triggerix",
   "license": "MIT",
+  "homepage": "https://github.com/triggerix-lang/triggerix#readme",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:triggerix-lang/triggerix.git",
+    "directory": "packages/json-schema"
+  },
+  "bugs": {
+    "url": "https://github.com/triggerix-lang/triggerix/issues"
+  },
   "publishConfig": {
     "access": "public"
   },

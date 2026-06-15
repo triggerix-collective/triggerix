@@ -4,6 +4,15 @@
   "version": "0.0.1",
   "description": "Headless editor core for Triggerix - descriptor-based slot/tool system",
   "license": "MIT",
+  "homepage": "https://github.com/triggerix-lang/triggerix#readme",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:triggerix-lang/triggerix.git",
+    "directory": "packages/editor"
+  },
+  "bugs": {
+    "url": "https://github.com/triggerix-lang/triggerix/issues"
+  },
   "publishConfig": {
     "access": "public"
   },
