@@ -3,6 +3,7 @@ import { defu } from 'defu'
 
 const commonBuildConfig: BuildConfig = {
   rollup: {
+    emitCJS: true,
     esbuild: {
       minify: true
     },
