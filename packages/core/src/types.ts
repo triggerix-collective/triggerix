@@ -1,17 +1,57 @@
 /**
+ * Valid operators for Condition evaluation (single source of truth)
+ */
+export const VALID_OPERATORS = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'contains', 'startsWith', 'endsWith', 'exists'] as const
+
+/**
+ * Binary arithmetic operators
+ */
+export const BINARY_OPERATORS = ['+', '-', '*', '/', '%'] as const
+
+/**
+ * Unary operators
+ */
+export const UNARY_OPERATORS = ['-', '!'] as const
+
+/**
+ * Compare operators (subset of VALID_OPERATORS, excluding 'exists')
+ */
+export const COMPARE_OPERATORS = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'contains', 'startsWith', 'endsWith'] as const
+
+/**
+ * Logical operators / ConditionGroup types
+ */
+export const LOGICAL_OPERATORS = ['and', 'or', 'not'] as const
+
+/**
+ * Condition group types (alias of LOGICAL_OPERATORS for clarity)
+ */
+export const CONDITION_GROUP_TYPES = LOGICAL_OPERATORS
+
+/**
  * Operator types for condition evaluation
  */
-export type Operator
-  = | 'eq'
-    | 'neq'
-    | 'gt'
-    | 'gte'
-    | 'lt'
-    | 'lte'
-    | 'contains'
-    | 'startsWith'
-    | 'endsWith'
-    | 'exists'
+export type Operator = typeof VALID_OPERATORS[number]
+
+/**
+ * Binary arithmetic operator type
+ */
+export type BinaryOp = typeof BINARY_OPERATORS[number]
+
+/**
+ * Unary operator type
+ */
+export type UnaryOp = typeof UNARY_OPERATORS[number]
+
+/**
+ * Compare operator type
+ */
+export type CompareOp = typeof COMPARE_OPERATORS[number]
+
+/**
+ * Logical operator type
+ */
+export type LogicalOp = typeof LOGICAL_OPERATORS[number]
 
 /**
  * Literal value - primitive types
@@ -53,7 +93,7 @@ export interface Condition {
  * Supports AND, OR, NOT
  */
 export interface ConditionGroup {
-  type: 'and' | 'or' | 'not'
+  type: LogicalOp
   conditions: Array<Condition | ConditionGroup>
 }
 
@@ -85,7 +125,7 @@ export type ExprOperand = Literal | Reference | ExprNode
 /** 二元算术运算 */
 export interface ExprBinary {
   type: 'binary'
-  operator: '+' | '-' | '*' | '/' | '%'
+  operator: BinaryOp
   left: ExprOperand
   right: ExprOperand
 }
@@ -93,14 +133,14 @@ export interface ExprBinary {
 /** 一元运算 */
 export interface ExprUnary {
   type: 'unary'
-  operator: '-' | '!'
+  operator: UnaryOp
   operand: ExprOperand
 }
 
 /** 比较运算 */
 export interface ExprCompare {
   type: 'compare'
-  operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'contains' | 'startsWith' | 'endsWith'
+  operator: CompareOp
   left: ExprOperand
   right: ExprOperand
 }
@@ -108,7 +148,7 @@ export interface ExprCompare {
 /** 逻辑组合 */
 export interface ExprLogical {
   type: 'logical'
-  operator: 'and' | 'or' | 'not'
+  operator: LogicalOp
   operands: ExprOperand[]
 }
 
@@ -185,3 +225,13 @@ export type ActionNode
     | ActionParallel
     | ActionTryCatch
     | ActionIf
+
+// Type Guards
+
+/**
+ * Type guard: check if a value is a ConditionGroup
+ */
+export function isConditionGroup(value: unknown): value is ConditionGroup {
+  return value !== null && value !== undefined && typeof value === 'object' && 'type' in value
+    && ['and', 'or', 'not'].includes((value as Record<string, unknown>).type as string)
+}

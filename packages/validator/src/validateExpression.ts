@@ -1,10 +1,7 @@
+import type { BinaryOp, CompareOp, LogicalOp, UnaryOp } from '@triggerix/core'
 import type { ValidationResult } from './errors'
+import { BINARY_OPERATORS, COMPARE_OPERATORS, LOGICAL_OPERATORS, UNARY_OPERATORS } from '@triggerix/core'
 import { createError, invalidResult, validResult } from './errors'
-
-const BINARY_OPERATORS = ['+', '-', '*', '/', '%']
-const UNARY_OPERATORS = ['-', '!']
-const COMPARE_OPERATORS = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'contains', 'startsWith', 'endsWith']
-const LOGICAL_OPERATORS = ['and', 'or', 'not']
 
 /**
  * Validate an Expression wrapper { $expr: ExprNode }
@@ -91,7 +88,7 @@ export function validateExprOperand(operand: unknown, path = 'operand'): Validat
 function validateExprBinary(n: Record<string, unknown>, path: string): ValidationResult {
   const errors = []
 
-  if (!BINARY_OPERATORS.includes(n.operator as string)) {
+  if (!BINARY_OPERATORS.includes(n.operator as BinaryOp)) {
     errors.push(createError(`${path}.operator`, `Binary operator must be one of: ${BINARY_OPERATORS.join(', ')}`))
   }
 
@@ -119,7 +116,7 @@ function validateExprBinary(n: Record<string, unknown>, path: string): Validatio
 function validateExprUnary(n: Record<string, unknown>, path: string): ValidationResult {
   const errors = []
 
-  if (!UNARY_OPERATORS.includes(n.operator as string)) {
+  if (!UNARY_OPERATORS.includes(n.operator as UnaryOp)) {
     errors.push(createError(`${path}.operator`, `Unary operator must be one of: ${UNARY_OPERATORS.join(', ')}`))
   }
 
@@ -138,7 +135,7 @@ function validateExprUnary(n: Record<string, unknown>, path: string): Validation
 function validateExprCompare(n: Record<string, unknown>, path: string): ValidationResult {
   const errors = []
 
-  if (!COMPARE_OPERATORS.includes(n.operator as string)) {
+  if (!COMPARE_OPERATORS.includes(n.operator as CompareOp)) {
     errors.push(createError(`${path}.operator`, `Compare operator must be one of: ${COMPARE_OPERATORS.join(', ')}`, 'semantic'))
   }
 
@@ -166,7 +163,7 @@ function validateExprCompare(n: Record<string, unknown>, path: string): Validati
 function validateExprLogical(n: Record<string, unknown>, path: string): ValidationResult {
   const errors = []
 
-  if (!LOGICAL_OPERATORS.includes(n.operator as string)) {
+  if (!LOGICAL_OPERATORS.includes(n.operator as LogicalOp)) {
     errors.push(createError(`${path}.operator`, `Logical operator must be one of: ${LOGICAL_OPERATORS.join(', ')}`))
   }
 

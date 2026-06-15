@@ -1,20 +1,8 @@
 import type { Operator } from '@triggerix/core'
 import type { ValidationResult } from './errors'
+import { isConditionGroup, VALID_OPERATORS } from '@triggerix/core'
 import { createError, invalidResult, validResult } from './errors'
 import { validateValue } from './validateValue'
-
-const VALID_OPERATORS: Operator[] = [
-  'eq',
-  'neq',
-  'gt',
-  'gte',
-  'lt',
-  'lte',
-  'contains',
-  'startsWith',
-  'endsWith',
-  'exists'
-]
 
 /**
  * Validate a single condition
@@ -85,7 +73,7 @@ export function validateConditionGroup(group: unknown, path = 'conditions'): Val
       const itemPath = `${path}.conditions[${i}]`
 
       // Determine if it's a ConditionGroup or a Condition
-      if (item && typeof item === 'object' && 'type' in item && ['and', 'or', 'not'].includes((item as Record<string, unknown>).type as string)) {
+      if (isConditionGroup(item)) {
         const groupResult = validateConditionGroup(item, itemPath)
         if (!groupResult.valid) {
           errors.push(...groupResult.errors)

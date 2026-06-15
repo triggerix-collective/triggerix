@@ -2,6 +2,7 @@ import type { Condition, ConditionGroup, Expression, Reference, Value } from '@t
 import type { FunctionRegistry } from './expressionEvaluator'
 import type { RuntimeContext } from './types'
 import { evaluateExprNode } from './expressionEvaluator'
+import { getNestedValue } from './utils'
 
 /**
  * Resolve a Value to its actual value given a runtime context
@@ -27,28 +28,22 @@ export function resolveValue(value: Value, context: RuntimeContext, functions: F
 }
 
 /**
- * Get a nested value from an object by dot-notation path
- */
-function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-  const parts = path.split('.')
-  let current: unknown = obj
-
-  for (const part of parts) {
-    if (current === null || current === undefined) {
-      return undefined
-    }
-    current = (current as Record<string, unknown>)[part]
-  }
-
-  return current
-}
-
-/**
  * Evaluate a single condition
  */
 export function evaluateCondition(condition: Condition, context: RuntimeContext, functions: FunctionRegistry = new Map()): boolean {
   const left = resolveValue(condition.left, context, functions)
-  const right = condition.right !== undefined ? resolveValue(condition.right, context, functions) : undefined
+
+  // exists 不需要 right 操作数
+  if (condition.operator === 'exists') {
+    return left !== undefined && left !== null
+  }
+
+  // 其他操作符必须有 right
+  if (condition.right === undefined) {
+    throw new Error(`Operator '${condition.operator}' requires a right operand`)
+  }
+
+  const right = resolveValue(condition.right, context, functions)
 
   switch (condition.operator) {
     case 'eq':
@@ -56,21 +51,19 @@ export function evaluateCondition(condition: Condition, context: RuntimeContext,
     case 'neq':
       return left !== right
     case 'gt':
-      return (left as number) > (right as number)
+      return typeof left === 'number' && typeof right === 'number' && left > right
     case 'gte':
-      return (left as number) >= (right as number)
+      return typeof left === 'number' && typeof right === 'number' && left >= right
     case 'lt':
-      return (left as number) < (right as number)
+      return typeof left === 'number' && typeof right === 'number' && left < right
     case 'lte':
-      return (left as number) <= (right as number)
+      return typeof left === 'number' && typeof right === 'number' && left <= right
     case 'contains':
       return typeof left === 'string' && typeof right === 'string' && left.includes(right)
     case 'startsWith':
       return typeof left === 'string' && typeof right === 'string' && left.startsWith(right)
     case 'endsWith':
       return typeof left === 'string' && typeof right === 'string' && left.endsWith(right)
-    case 'exists':
-      return left !== undefined && left !== null
     default:
       return false
   }

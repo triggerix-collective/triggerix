@@ -66,11 +66,9 @@ export function createEditor(): TriggerixEditor {
    * Helper: convert SlotValueEntry map to plain value map for descriptor rendering
    */
   function toPlainValues(slotValues: Record<string, SlotValueEntry>): Record<string, unknown> {
-    const result: Record<string, unknown> = {}
-    for (const [key, entry] of Object.entries(slotValues)) {
-      result[key] = entry.value
-    }
-    return result
+    return Object.fromEntries(
+      Object.entries(slotValues).map(([key, entry]) => [key, entry.value])
+    )
   }
 
   return {

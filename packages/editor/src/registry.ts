@@ -7,18 +7,30 @@ export class Registry {
   private tools = new Map<string, ToolDef>()
 
   registerEvent(def: EventDef): void {
+    if (this.events.has(def.type)) {
+      console.warn(`Event type '${def.type}' is already registered. Overwriting.`)
+    }
     this.events.set(def.type, def)
   }
 
   registerAction(def: ActionDef): void {
+    if (this.actions.has(def.type)) {
+      console.warn(`Action type '${def.type}' is already registered. Overwriting.`)
+    }
     this.actions.set(def.type, def)
   }
 
   registerCondition(def: ConditionDef): void {
+    if (this.conditions.has(def.type)) {
+      console.warn(`Condition type '${def.type}' is already registered. Overwriting.`)
+    }
     this.conditions.set(def.type, def)
   }
 
   registerTool(name: string, def: ToolDef): void {
+    if (this.tools.has(name)) {
+      console.warn(`Tool '${name}' is already registered. Overwriting.`)
+    }
     this.tools.set(name, def)
   }
 

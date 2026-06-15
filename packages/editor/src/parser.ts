@@ -16,9 +16,9 @@ export function parseTemplate(
   const segments: Segment[] = []
   const regex = /\$\{(\w+)\}/g
   let lastIndex = 0
-  let match: RegExpExecArray | null
+  let match: RegExpExecArray | null = regex.exec(template)
 
-  while ((match = regex.exec(template)) !== null) {
+  while (match !== null) {
     // Add text before this match
     if (match.index > lastIndex) {
       segments.push({ type: 'text', content: template.slice(lastIndex, match.index) })
@@ -42,6 +42,7 @@ export function parseTemplate(
     }
 
     lastIndex = match.index + match[0].length
+    match = regex.exec(template)
   }
 
   // Add remaining text

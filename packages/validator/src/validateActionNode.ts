@@ -1,4 +1,5 @@
 import type { ValidationError, ValidationResult } from './errors'
+import { isConditionGroup } from '@triggerix/core'
 import { createError, invalidResult, validResult } from './errors'
 import { validateAction } from './validateAction'
 import { validateCondition, validateConditionGroup } from './validateCondition'
@@ -128,8 +129,7 @@ function validateActionIf(n: Record<string, unknown>, path: string): ValidationR
   }
   else {
     // Determine if it's a ConditionGroup or Condition
-    const c = n.condition as Record<string, unknown>
-    if (c.type && ['and', 'or', 'not'].includes(c.type as string)) {
+    if (isConditionGroup(n.condition)) {
       const r = validateConditionGroup(n.condition, `${path}.condition`)
       if (!r.valid)
         errors.push(...r.errors)

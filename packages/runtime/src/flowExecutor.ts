@@ -1,7 +1,8 @@
-import type { Action, ActionIf, ActionNode, ActionParallel, ActionSequence, ActionTryCatch, Condition, ConditionGroup } from '@triggerix/core'
+import type { Action, ActionIf, ActionNode, ActionParallel, ActionSequence, ActionTryCatch, Condition } from '@triggerix/core'
 import type { ActionRegistry } from './actionRegistry'
 import type { FunctionRegistry } from './expressionEvaluator'
 import type { RuntimeContext } from './types'
+import { isConditionGroup } from '@triggerix/core'
 import { evaluateCondition, evaluateConditionGroup } from './conditionEvaluator'
 
 /**
@@ -111,9 +112,8 @@ async function executeIf(
 ): Promise<void> {
   let passed: boolean
 
-  const condition = node.condition as unknown as Record<string, unknown>
-  if ('type' in condition && ['and', 'or', 'not'].includes(condition.type as string)) {
-    passed = evaluateConditionGroup(node.condition as ConditionGroup, context, functions)
+  if (isConditionGroup(node.condition)) {
+    passed = evaluateConditionGroup(node.condition, context, functions)
   }
   else {
     passed = evaluateCondition(node.condition as Condition, context, functions)

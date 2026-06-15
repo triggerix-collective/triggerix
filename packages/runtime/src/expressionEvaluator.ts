@@ -1,5 +1,7 @@
-import type { ExprNode, ExprOperand, Reference } from '@triggerix/core'
+import type { CompareOp, ExprNode, ExprOperand, Reference } from '@triggerix/core'
 import type { RuntimeContext } from './types'
+import { COMPARE_OPERATORS } from '@triggerix/core'
+import { getNestedValue } from './utils'
 
 /**
  * Function registry type
@@ -7,21 +9,13 @@ import type { RuntimeContext } from './types'
 export type FunctionRegistry = Map<string, (...args: unknown[]) => unknown>
 
 /**
- * Resolve a nested value from an object by dot-notation path
+ * Default maximum recursion depth for expression evaluation
  */
-function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-  const parts = path.split('.')
-  let current: unknown = obj
+const DEFAULT_MAX_DEPTH = 100
 
-  for (const part of parts) {
-    if (current === null || current === undefined) {
-      return undefined
-    }
-    current = (current as Record<string, unknown>)[part]
-  }
-
-  return current
-}
+// Re-export for downstream consumers that need to validate compare operators
+export { COMPARE_OPERATORS }
+export type { CompareOp }
 
 /**
  * Evaluate an ExprOperand (Literal | Reference | ExprNode)
@@ -29,7 +23,9 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 export function evaluateExprOperand(
   operand: ExprOperand,
   context: RuntimeContext,
-  functions: FunctionRegistry
+  functions: FunctionRegistry,
+  depth: number = 0,
+  maxDepth: number = DEFAULT_MAX_DEPTH
 ): unknown {
   // Literal: string, number, boolean
   if (typeof operand === 'string' || typeof operand === 'number' || typeof operand === 'boolean') {
@@ -43,24 +39,32 @@ export function evaluateExprOperand(
 
   // ExprNode: { type: ... }
   if (operand && typeof operand === 'object' && 'type' in operand) {
-    return evaluateExprNode(operand as ExprNode, context, functions)
+    return evaluateExprNode(operand as ExprNode, context, functions, depth, maxDepth)
   }
 
   return undefined
 }
 
 /**
- * Evaluate an ExprNode recursively
+ * Evaluate an ExprNode recursively with depth limit protection
  */
 export function evaluateExprNode(
   node: ExprNode,
   context: RuntimeContext,
-  functions: FunctionRegistry
+  functions: FunctionRegistry,
+  depth: number = 0,
+  maxDepth: number = DEFAULT_MAX_DEPTH
 ): unknown {
+  if (depth > maxDepth) {
+    throw new Error(`Expression evaluation exceeds maximum depth (${maxDepth})`)
+  }
+
+  const nextDepth = depth + 1
+
   switch (node.type) {
     case 'binary': {
-      const left = evaluateExprOperand(node.left, context, functions) as number
-      const right = evaluateExprOperand(node.right, context, functions) as number
+      const left = evaluateExprOperand(node.left, context, functions, nextDepth, maxDepth) as number
+      const right = evaluateExprOperand(node.right, context, functions, nextDepth, maxDepth) as number
       switch (node.operator) {
         case '+': return left + right
         case '-': return left - right
@@ -72,7 +76,7 @@ export function evaluateExprNode(
     }
 
     case 'unary': {
-      const val = evaluateExprOperand(node.operand, context, functions)
+      const val = evaluateExprOperand(node.operand, context, functions, nextDepth, maxDepth)
       switch (node.operator) {
         case '-': return -(val as number)
         case '!': return !val
@@ -81,8 +85,8 @@ export function evaluateExprNode(
     }
 
     case 'compare': {
-      const left = evaluateExprOperand(node.left, context, functions)
-      const right = evaluateExprOperand(node.right, context, functions)
+      const left = evaluateExprOperand(node.left, context, functions, nextDepth, maxDepth)
+      const right = evaluateExprOperand(node.right, context, functions, nextDepth, maxDepth)
       switch (node.operator) {
         case 'eq': return left === right
         case 'neq': return left !== right
@@ -98,11 +102,13 @@ export function evaluateExprNode(
     }
 
     case 'logical': {
-      const operands = node.operands.map(o => evaluateExprOperand(o, context, functions))
       switch (node.operator) {
-        case 'and': return operands.every(Boolean)
-        case 'or': return operands.some(Boolean)
-        case 'not': return !operands[0]
+        case 'and':
+          return node.operands.every(o => Boolean(evaluateExprOperand(o, context, functions, nextDepth, maxDepth)))
+        case 'or':
+          return node.operands.some(o => Boolean(evaluateExprOperand(o, context, functions, nextDepth, maxDepth)))
+        case 'not':
+          return !evaluateExprOperand(node.operands[0], context, functions, nextDepth, maxDepth)
       }
       break
     }
@@ -112,21 +118,21 @@ export function evaluateExprNode(
       if (!fn) {
         throw new Error(`Function not registered: ${node.name}`)
       }
-      const args = node.args.map(a => evaluateExprOperand(a, context, functions))
+      const args = node.args.map(a => evaluateExprOperand(a, context, functions, nextDepth, maxDepth))
       return fn(...args)
     }
 
     case 'concat': {
       return node.values
-        .map(v => String(evaluateExprOperand(v, context, functions)))
+        .map(v => String(evaluateExprOperand(v, context, functions, nextDepth, maxDepth)))
         .join('')
     }
 
     case 'ternary': {
-      const test = evaluateExprOperand(node.test, context, functions)
+      const test = evaluateExprOperand(node.test, context, functions, nextDepth, maxDepth)
       return test
-        ? evaluateExprOperand(node.consequent, context, functions)
-        : evaluateExprOperand(node.alternate, context, functions)
+        ? evaluateExprOperand(node.consequent, context, functions, nextDepth, maxDepth)
+        : evaluateExprOperand(node.alternate, context, functions, nextDepth, maxDepth)
     }
   }
 

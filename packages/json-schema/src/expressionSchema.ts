@@ -1,4 +1,10 @@
 import type { JSONSchema } from './types'
+import {
+  BINARY_OPERATORS,
+  COMPARE_OPERATORS,
+  LOGICAL_OPERATORS,
+  UNARY_OPERATORS
+} from '@triggerix/core'
 
 /**
  * Generate JSON Schema for ExprOperand (Literal | Reference | ExprNode)
@@ -47,7 +53,7 @@ export function generateExprBinarySchema(): JSONSchema {
     type: 'object',
     properties: {
       type: { const: 'binary' },
-      operator: { type: 'string', enum: ['+', '-', '*', '/', '%'] },
+      operator: { type: 'string', enum: [...BINARY_OPERATORS] },
       left: { $ref: '#/definitions/ExprOperand' },
       right: { $ref: '#/definitions/ExprOperand' }
     },
@@ -64,7 +70,7 @@ export function generateExprUnarySchema(): JSONSchema {
     type: 'object',
     properties: {
       type: { const: 'unary' },
-      operator: { type: 'string', enum: ['-', '!'] },
+      operator: { type: 'string', enum: [...UNARY_OPERATORS] },
       operand: { $ref: '#/definitions/ExprOperand' }
     },
     required: ['type', 'operator', 'operand'],
@@ -80,7 +86,7 @@ export function generateExprCompareSchema(): JSONSchema {
     type: 'object',
     properties: {
       type: { const: 'compare' },
-      operator: { type: 'string', enum: ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'contains', 'startsWith', 'endsWith'] },
+      operator: { type: 'string', enum: [...COMPARE_OPERATORS] },
       left: { $ref: '#/definitions/ExprOperand' },
       right: { $ref: '#/definitions/ExprOperand' }
     },
@@ -97,7 +103,7 @@ export function generateExprLogicalSchema(): JSONSchema {
     type: 'object',
     properties: {
       type: { const: 'logical' },
-      operator: { type: 'string', enum: ['and', 'or', 'not'] },
+      operator: { type: 'string', enum: [...LOGICAL_OPERATORS] },
       operands: {
         type: 'array',
         items: { $ref: '#/definitions/ExprOperand' },

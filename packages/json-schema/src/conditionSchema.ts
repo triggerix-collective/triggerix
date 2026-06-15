@@ -1,4 +1,5 @@
 import type { JSONSchema } from './types'
+import { LOGICAL_OPERATORS, VALID_OPERATORS } from '@triggerix/core'
 import { generateValueSchema } from './valueSchema'
 
 /**
@@ -7,18 +8,7 @@ import { generateValueSchema } from './valueSchema'
 export function generateOperatorSchema(): JSONSchema {
   return {
     type: 'string',
-    enum: [
-      'eq',
-      'neq',
-      'gt',
-      'gte',
-      'lt',
-      'lte',
-      'contains',
-      'startsWith',
-      'endsWith',
-      'exists'
-    ]
+    enum: [...VALID_OPERATORS]
   }
 }
 
@@ -51,7 +41,7 @@ export function generateConditionGroupSchema(): JSONSchema {
     properties: {
       type: {
         type: 'string',
-        enum: ['and', 'or', 'not']
+        enum: [...LOGICAL_OPERATORS]
       },
       conditions: {
         type: 'array',
