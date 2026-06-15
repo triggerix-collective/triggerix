@@ -13,13 +13,15 @@
     "stub": "pnpm -r run stub",
     "build": "pnpm -r run build",
     "lint": "eslint --cache",
-    "release": "bumpp -r"
+    "release": "bumpp -r",
+    "update-readme": "esno scripts/update-readme.ts"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.0.0",
     "bumpp": "^11.1.0",
     "defu": "^6.1.7",
     "eslint": "^10.5.0",
+    "esno": "^4.8.0",
     "typescript": "^6.0.3",
     "unbuild": "^3.6.1"
   }
