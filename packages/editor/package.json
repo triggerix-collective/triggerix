@@ -2,7 +2,7 @@
   "name": "@triggerix/editor",
   "type": "module",
   "version": "0.0.2",
-  "description": "Headless editor core for Triggerix - descriptor-based slot/tool system",
+  "description": "Generic editor infrastructure for Triggerix - shared base for all editing modes",
   "license": "MIT",
   "homepage": "https://github.com/triggerix-lang/triggerix#readme",
   "repository": {

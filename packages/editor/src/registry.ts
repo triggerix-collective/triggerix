@@ -1,68 +1,51 @@
-import type { ActionDef, ConditionDef, EventDef, ToolDef } from './types'
+import type { BaseItemDef } from './types'
 
-export class Registry {
-  private events = new Map<string, EventDef>()
-  private actions = new Map<string, ActionDef>()
-  private conditions = new Map<string, ConditionDef>()
-  private tools = new Map<string, ToolDef>()
+/**
+ * 通用类型安全注册表
+ * 各 preset 可扩展 ItemDef，添加自己的字段（如 template/slots/ports 等）
+ */
+export class BaseRegistry<
+  TEventDef extends BaseItemDef = BaseItemDef,
+  TActionDef extends BaseItemDef = BaseItemDef,
+  TConditionDef extends BaseItemDef = BaseItemDef
+> {
+  protected events = new Map<string, TEventDef>()
+  protected actions = new Map<string, TActionDef>()
+  protected conditions = new Map<string, TConditionDef>()
 
-  registerEvent(def: EventDef): void {
-    if (this.events.has(def.type)) {
-      console.warn(`Event type '${def.type}' is already registered. Overwriting.`)
-    }
+  registerEvent(def: TEventDef): void {
     this.events.set(def.type, def)
   }
 
-  registerAction(def: ActionDef): void {
-    if (this.actions.has(def.type)) {
-      console.warn(`Action type '${def.type}' is already registered. Overwriting.`)
-    }
+  registerAction(def: TActionDef): void {
     this.actions.set(def.type, def)
   }
 
-  registerCondition(def: ConditionDef): void {
-    if (this.conditions.has(def.type)) {
-      console.warn(`Condition type '${def.type}' is already registered. Overwriting.`)
-    }
+  registerCondition(def: TConditionDef): void {
     this.conditions.set(def.type, def)
   }
 
-  registerTool(name: string, def: ToolDef): void {
-    if (this.tools.has(name)) {
-      console.warn(`Tool '${name}' is already registered. Overwriting.`)
-    }
-    this.tools.set(name, def)
-  }
-
-  getEvent(type: string): EventDef | undefined {
+  getEvent(type: string): TEventDef | undefined {
     return this.events.get(type)
   }
 
-  getAction(type: string): ActionDef | undefined {
+  getAction(type: string): TActionDef | undefined {
     return this.actions.get(type)
   }
 
-  getCondition(type: string): ConditionDef | undefined {
+  getCondition(type: string): TConditionDef | undefined {
     return this.conditions.get(type)
   }
 
-  getTool(name: string): ToolDef | undefined {
-    return this.tools.get(name)
+  getEvents(): TEventDef[] {
+    return [...this.events.values()]
   }
 
-  getEvents(): EventDef[] {
-    return Array.from(this.events.values())
+  getActions(): TActionDef[] {
+    return [...this.actions.values()]
   }
 
-  getActions(): ActionDef[] {
-    return Array.from(this.actions.values())
-  }
-
-  getConditions(): ConditionDef[] {
-    return Array.from(this.conditions.values())
-  }
-
-  getTools(): Map<string, ToolDef> {
-    return new Map(this.tools)
+  getConditions(): TConditionDef[] {
+    return [...this.conditions.values()]
   }
 }
