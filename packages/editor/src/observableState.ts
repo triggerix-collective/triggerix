@@ -1,6 +1,5 @@
 /**
- * 提供可观测状态管理的基类
- * 各 preset 继承此类来管理自己的状态，无需重复实现订阅/通知机制
+ * Observable state base class with subscribe/notify mechanism.
  */
 export class ObservableState<T> {
   private state: T

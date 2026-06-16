@@ -119,10 +119,10 @@ export interface Rule {
 
 // Expression System - dynamic computation nodes
 
-/** 表达式操作数 = 字面量 | 引用 | 表达式节点 */
+/** Expression operand */
 export type ExprOperand = Literal | Reference | ExprNode
 
-/** 二元算术运算 */
+/** Binary arithmetic expression */
 export interface ExprBinary {
   type: 'binary'
   operator: BinaryOp
@@ -130,14 +130,14 @@ export interface ExprBinary {
   right: ExprOperand
 }
 
-/** 一元运算 */
+/** Unary expression */
 export interface ExprUnary {
   type: 'unary'
   operator: UnaryOp
   operand: ExprOperand
 }
 
-/** 比较运算 */
+/** Comparison expression */
 export interface ExprCompare {
   type: 'compare'
   operator: CompareOp
@@ -145,27 +145,27 @@ export interface ExprCompare {
   right: ExprOperand
 }
 
-/** 逻辑组合 */
+/** Logical expression */
 export interface ExprLogical {
   type: 'logical'
   operator: LogicalOp
   operands: ExprOperand[]
 }
 
-/** 函数调用 */
+/** Function call expression */
 export interface ExprCall {
   type: 'call'
   name: string
   args: ExprOperand[]
 }
 
-/** 字符串拼接 */
+/** String concatenation */
 export interface ExprConcat {
   type: 'concat'
   values: ExprOperand[]
 }
 
-/** 三元条件 */
+/** Ternary expression */
 export interface ExprTernary {
   type: 'ternary'
   test: ExprOperand
@@ -173,7 +173,7 @@ export interface ExprTernary {
   alternate: ExprOperand
 }
 
-/** 所有表达式节点的联合类型 */
+/** Union of all expression nodes */
 export type ExprNode
   = | ExprBinary
     | ExprUnary
@@ -183,26 +183,26 @@ export type ExprNode
     | ExprConcat
     | ExprTernary
 
-/** Expression 包装器 */
+/** Expression wrapper */
 export interface Expression {
   $expr: ExprNode
 }
 
 // Flow Control - composite action nodes
 
-/** 顺序执行 */
+/** Sequential execution */
 export interface ActionSequence {
   type: 'sequence'
   actions: ActionNode[]
 }
 
-/** 并行执行 */
+/** Parallel execution */
 export interface ActionParallel {
   type: 'parallel'
   actions: ActionNode[]
 }
 
-/** 错误处理 */
+/** Try-catch error handling */
 export interface ActionTryCatch {
   type: 'tryCatch'
   try: ActionNode[]
@@ -210,7 +210,7 @@ export interface ActionTryCatch {
   finally?: ActionNode[]
 }
 
-/** 条件分支 */
+/** Conditional branching */
 export interface ActionIf {
   type: 'if'
   condition: Condition | ConditionGroup
@@ -218,7 +218,7 @@ export interface ActionIf {
   else?: ActionNode[]
 }
 
-/** 动作节点 = 普通动作 | 流程控制节点 */
+/** Action node union */
 export type ActionNode
   = | Action
     | ActionSequence

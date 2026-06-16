@@ -33,12 +33,12 @@ export function resolveValue(value: Value, context: RuntimeContext, functions: F
 export function evaluateCondition(condition: Condition, context: RuntimeContext, functions: FunctionRegistry = new Map()): boolean {
   const left = resolveValue(condition.left, context, functions)
 
-  // exists 不需要 right 操作数
+  // 'exists' requires no right operand
   if (condition.operator === 'exists') {
     return left !== undefined && left !== null
   }
 
-  // 其他操作符必须有 right
+  // Other operators require right operand
   if (condition.right === undefined) {
     throw new Error(`Operator '${condition.operator}' requires a right operand`)
   }

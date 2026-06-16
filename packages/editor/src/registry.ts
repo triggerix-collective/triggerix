@@ -1,8 +1,7 @@
 import type { BaseItemDef } from './types'
 
 /**
- * 通用类型安全注册表
- * 各 preset 可扩展 ItemDef，添加自己的字段（如 template/slots/ports 等）
+ * Type-safe registry for event/action/condition definitions.
  */
 export class BaseRegistry<
   TEventDef extends BaseItemDef = BaseItemDef,
