@@ -23,6 +23,7 @@
     "lint": "eslint --cache",
     "release": "bumpp -r",
     "update-readme": "esno scripts/update-readme.ts",
+    "test": "vitest run",
     "prepare": "simple-git-hooks"
   },
   "devDependencies": {
@@ -34,7 +35,8 @@
     "nano-staged": "^1.0.2",
     "simple-git-hooks": "^2.13.1",
     "typescript": "^6.0.3",
-    "unbuild": "^3.6.1"
+    "unbuild": "^3.6.1",
+    "vitest": "^3.2.1"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm nano-staged"
