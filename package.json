@@ -22,7 +22,8 @@
     "build": "pnpm -r run build",
     "lint": "eslint --cache",
     "release": "bumpp -r",
-    "update-readme": "esno scripts/update-readme.ts"
+    "update-readme": "esno scripts/update-readme.ts",
+    "prepare": "simple-git-hooks"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.0.0",
@@ -30,7 +31,15 @@
     "defu": "^6.1.7",
     "eslint": "^10.5.0",
     "esno": "^4.8.0",
+    "nano-staged": "^1.0.2",
+    "simple-git-hooks": "^2.13.1",
     "typescript": "^6.0.3",
     "unbuild": "^3.6.1"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm nano-staged"
+  },
+  "nano-staged": {
+    "*": "eslint --cache --fix"
   }
 }
