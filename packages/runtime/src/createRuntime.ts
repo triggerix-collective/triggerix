@@ -31,9 +31,16 @@ export interface TriggerixRuntime {
   removeTrigger: (id: string) => void
 
   /**
-   * Emit an event - triggers matching triggers
+   * Emit an event - runs all matching triggers.
+   *
+   * - `type`: the event type id (e.g. ''button.click'')
+   * - `source`: the originating component instance name (e.g. ''save'').
+   *   Triggers whose `event.source` is set are only fired when `source`
+   *   matches exactly. Triggers whose `event.source` is unset fire for any
+   *   source (including the `undefined` case).
+   * - `payload`: arbitrary event payload merged into the runtime context.
    */
-  emit: (type: string, payload?: Record<string, unknown>) => Promise<void>
+  emit: (type: string, source?: string, payload?: Record<string, unknown>) => Promise<void>
 
   /**
    * Get all registered event types
@@ -90,16 +97,22 @@ export function createRuntime(options: RuntimeOptions = {}): TriggerixRuntime {
     }
   }
 
-  async function emit(type: string, payload?: Record<string, unknown>): Promise<void> {
+  async function emit(
+    type: string,
+    source?: string,
+    payload?: Record<string, unknown>
+  ): Promise<void> {
     // Find matching triggers
     const matchingTriggers = triggers.filter((trigger) => {
-      // Match event type
+      // event.type must match
       if (trigger.event.type !== type)
         return false
 
-      // Match event source if specified
-      if (trigger.event.source) {
-        // Source matching can be extended
+      // event.source matching:
+      // - trigger.event.source unset -> matches any source (including undefined)
+      // - trigger.event.source set   -> must equal incoming source exactly
+      if (trigger.event.source !== undefined && trigger.event.source !== source) {
+        return false
       }
 
       return true
@@ -108,7 +121,8 @@ export function createRuntime(options: RuntimeOptions = {}): TriggerixRuntime {
     // Execute matching triggers
     for (const trigger of matchingTriggers) {
       const context: RuntimeContext = {
-        event: { type, payload },
+        event: { type, source, payload },
+        source,
         payload,
         ...payload
       }

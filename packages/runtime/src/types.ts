@@ -27,9 +27,14 @@ export interface ActionDefinition {
 
 /**
  * Runtime context - holds current state for condition evaluation
+ *
+ * `source` is the component instance name that triggered the event. It is
+ * placed at the top level so Triggerix conditions can reference it directly
+ * via `$ref: 'source'` or `$ref: 'event.source'` (both work).
  */
 export interface RuntimeContext {
   event: Event
+  source?: string
   payload?: Record<string, unknown>
   [key: string]: unknown
 }
