@@ -1,6 +1,7 @@
 export { generateActionSchema } from './actionSchema'
 export {
   generateConditionGroupSchema,
+  generateConditionItemSchema,
   generateConditionSchema,
   generateOperatorSchema
 } from './conditionSchema'

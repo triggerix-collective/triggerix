@@ -18,7 +18,9 @@ describe('isConditionGroup', () => {
     expect(isConditionGroup({ type: 'or', conditions: [] })).toBe(true)
   })
 
-  it('returns true for a group with type "not"', () => {
+  it('returns true for an object with type "not" (type validity is checked elsewhere)', () => {
+    // `isConditionGroup` is a structural guard: it only requires a string `type`
+    // field. Whether the operator value is supported is the validator's job.
     expect(isConditionGroup({ type: 'not', conditions: [] })).toBe(true)
   })
 
@@ -42,8 +44,8 @@ describe('isConditionGroup', () => {
     expect(isConditionGroup({ operator: 'eq', left: 1, right: 2 })).toBe(false)
   })
 
-  it('returns false for an object with unknown type', () => {
-    expect(isConditionGroup({ type: 'unknown', conditions: [] })).toBe(false)
+  it('returns true for an object with an arbitrary string type (validator rejects unknown values)', () => {
+    expect(isConditionGroup({ type: 'unknown', conditions: [] })).toBe(true)
   })
 })
 
@@ -75,7 +77,13 @@ describe('operator constants', () => {
     expect(COMPARE_OPERATORS).not.toContain('exists')
   })
 
-  it('lOGICAL_OPERATORS equals CONDITION_GROUP_TYPES', () => {
-    expect(LOGICAL_OPERATORS).toEqual(CONDITION_GROUP_TYPES)
+  it('lOGICAL_OPERATORS contains "not" (expression system keeps it)', () => {
+    expect(LOGICAL_OPERATORS).toContain('not')
+  })
+
+  it('cONDITION_GROUP_TYPES does NOT contain "not"', () => {
+    expect(CONDITION_GROUP_TYPES).not.toContain('not')
+    expect(CONDITION_GROUP_TYPES).toContain('and')
+    expect(CONDITION_GROUP_TYPES).toContain('or')
   })
 })

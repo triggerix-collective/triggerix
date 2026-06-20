@@ -12,7 +12,7 @@ describe('createRuntime - basic flow', () => {
 
     const trigger: Trigger = {
       id: 't1',
-      event: { type: 'user.login' },
+      events: [{ type: 'user.login' }],
       actions: [{ type: 'log', params: { msg: 'hi' } }]
     }
     runtime.addTrigger(trigger)
@@ -34,21 +34,92 @@ describe('createRuntime - condition filtering', () => {
 
     runtime.addTrigger({
       id: 't1',
-      event: { type: 'order.created' },
-      conditions: {
-        type: 'and',
-        conditions: [
-          { left: { $ref: 'payload.amount' }, operator: 'gt', right: 100 }
-        ]
-      },
+      events: [{ type: 'order.created' }],
+      conditions: [
+        { left: { $ref: 'payload.amount' }, operator: 'gt', right: 100 }
+      ],
       actions: [{ type: 'notify' }]
     })
 
-    await runtime.emit('order.created', { amount: 50 })
+    await runtime.emit('order.created', undefined, { amount: 50 })
     expect(handler).not.toHaveBeenCalled()
 
-    await runtime.emit('order.created', { amount: 200 })
+    await runtime.emit('order.created', undefined, { amount: 200 })
     expect(handler).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('createRuntime - multi-event OR matching', () => {
+  it('trigger fires when any of its events matches', async () => {
+    const a = vi.fn()
+    const b = vi.fn()
+    const runtime = createRuntime()
+
+    runtime.registerEvent('click')
+    runtime.registerEvent('init')
+    runtime.registerAction('a', a)
+    runtime.registerAction('b', b)
+
+    runtime.addTrigger({
+      id: 't1',
+      events: [
+        { type: 'click', source: 'save' },
+        { type: 'init', source: 'page' }
+      ],
+      actions: [{ type: 'a' }]
+    })
+    runtime.addTrigger({
+      id: 't2',
+      events: [{ type: 'init' }],
+      actions: [{ type: 'b' }]
+    })
+
+    await runtime.emit('click', 'save')
+    expect(a).toHaveBeenCalledTimes(1)
+    expect(b).not.toHaveBeenCalled()
+
+    await runtime.emit('init', 'page')
+    expect(a).toHaveBeenCalledTimes(2)
+    expect(b).toHaveBeenCalledTimes(1)
+  })
+
+  it('trigger does not fire when none of its events matches', async () => {
+    const handler = vi.fn()
+    const runtime = createRuntime()
+
+    runtime.registerEvent('click')
+    runtime.registerAction('a', handler)
+
+    runtime.addTrigger({
+      id: 't1',
+      events: [
+        { type: 'click', source: 'save' },
+        { type: 'click', source: 'cancel' }
+      ],
+      actions: [{ type: 'a' }]
+    })
+
+    await runtime.emit('click', 'other')
+    expect(handler).not.toHaveBeenCalled()
+  })
+
+  it('event with no source matches any incoming source', async () => {
+    const handler = vi.fn()
+    const runtime = createRuntime()
+
+    runtime.registerEvent('e')
+    runtime.registerAction('a', handler)
+
+    runtime.addTrigger({
+      id: 't1',
+      events: [{ type: 'e' }],
+      actions: [{ type: 'a' }]
+    })
+
+    await runtime.emit('e', undefined)
+    expect(handler).toHaveBeenCalledTimes(1)
+    await runtime.emit('e', 'whatever')
+    expect(handler).toHaveBeenCalledTimes(2)
   })
 })
 
@@ -62,7 +133,7 @@ describe('createRuntime - removeTrigger', () => {
 
     runtime.addTrigger({
       id: 't1',
-      event: { type: 'e' },
+      events: [{ type: 'e' }],
       actions: [{ type: 'a' }]
     })
 
@@ -86,7 +157,7 @@ describe('createRuntime - listEvents / listActions / listTriggers', () => {
 
     const trigger: Trigger = {
       id: 't1',
-      event: { type: 'e1' },
+      events: [{ type: 'e1' }],
       actions: [{ type: 'a1' }]
     }
     runtime.addTrigger(trigger)
@@ -109,30 +180,27 @@ describe('createRuntime - registerFunction', () => {
 
     runtime.addTrigger({
       id: 't1',
-      event: { type: 'e' },
-      conditions: {
-        type: 'and',
-        conditions: [
-          {
-            left: {
-              $expr: {
-                type: 'call',
-                name: 'greaterThan10',
-                args: [{ $ref: 'payload.n' }]
-              }
-            },
-            operator: 'eq',
-            right: true
-          }
-        ]
-      },
+      events: [{ type: 'e' }],
+      conditions: [
+        {
+          left: {
+            $expr: {
+              type: 'call',
+              name: 'greaterThan10',
+              args: [{ $ref: 'payload.n' }]
+            }
+          },
+          operator: 'eq',
+          right: true
+        }
+      ],
       actions: [{ type: 'a' }]
     })
 
-    await runtime.emit('e', { n: 5 })
+    await runtime.emit('e', undefined, { n: 5 })
     expect(handler).not.toHaveBeenCalled()
 
-    await runtime.emit('e', { n: 20 })
+    await runtime.emit('e', undefined, { n: 20 })
     expect(handler).toHaveBeenCalledTimes(1)
   })
 })
@@ -151,7 +219,7 @@ describe('createRuntime - continueOnError', () => {
 
     runtime.addTrigger({
       id: 't1',
-      event: { type: 'e' },
+      events: [{ type: 'e' }],
       actions: [{ type: 'fail' }, { type: 'after' }]
     })
 
@@ -174,7 +242,7 @@ describe('createRuntime - continueOnError', () => {
 
     runtime.addTrigger({
       id: 't1',
-      event: { type: 'e' },
+      events: [{ type: 'e' }],
       actions: [{ type: 'fail' }, { type: 'after' }]
     })
 

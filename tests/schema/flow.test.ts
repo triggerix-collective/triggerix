@@ -47,13 +47,13 @@ describe('flow builders', () => {
 
   it('actionIf builds a node with condition/then/else', () => {
     const result = actionIf({
-      condition: validCondition,
+      condition: [validCondition],
       then: [action1],
       else: [action2]
     })
     expect(result).toEqual({
       type: 'if',
-      condition: validCondition,
+      condition: [validCondition],
       then: [action1],
       else: [action2]
     })
@@ -61,14 +61,23 @@ describe('flow builders', () => {
 
   it('actionIf omits else when not provided', () => {
     const result = actionIf({
-      condition: validCondition,
+      condition: [validCondition],
       then: [action1]
     })
     expect(result).toEqual({
       type: 'if',
-      condition: validCondition,
+      condition: [validCondition],
       then: [action1]
     })
     expect(result).not.toHaveProperty('else')
+  })
+
+  it('actionIf accepts ConditionGroup as a condition array element', () => {
+    const group = { type: 'and' as const, conditions: [validCondition] }
+    const result = actionIf({
+      condition: [validCondition, group],
+      then: [action1]
+    })
+    expect(result.condition).toEqual([validCondition, group])
   })
 })

@@ -138,10 +138,10 @@ runtime.registerAction('file.pick', (params) => {
 <details>
 <summary><strong>Condition Operators (built-in, no registration needed)</strong></summary>
 
-Conditions are a built-in capability of the protocol layer. Developers don't need to register them and can use them directly within triggers:
+Conditions are a built-in capability of the protocol layer. Developers don't need to register them and can use them directly within triggers. **Conditions are flat arrays**: non-group items imply implicit AND, group items explicitly declare `and` / `or` with arbitrary nesting.
 
 ```typescript
-import { defineCondition, defineConditionGroup } from '@triggerix/schema'
+import { defineCondition, defineConditionGroup, defineConditions } from '@triggerix/schema'
 
 // Single condition
 const isEmpty = defineCondition({
@@ -150,8 +150,14 @@ const isEmpty = defineCondition({
   right: ''
 })
 
-// Combined conditions
-const canSubmit = defineConditionGroup({
+// Combined conditions: flat array with implicit AND
+const canSubmit = defineConditions(
+  { left: { $ref: 'input.value' }, operator: 'neq', right: '' },
+  { left: { $ref: 'user.age' }, operator: 'gte', right: 18 }
+)
+
+// Equivalent explicit-group form
+const canSubmitAlt = defineConditionGroup({
   type: 'and',
   conditions: [
     { left: { $ref: 'input.value' }, operator: 'neq', right: '' },
@@ -162,7 +168,7 @@ const canSubmit = defineConditionGroup({
 
 Supported operators: `eq` · `neq` · `gt` · `gte` · `lt` · `lte` · `exists`
 
-Supported logical combinators: `and` · `or` · `not`
+Supported logical combinators: `and` · `or` (the condition layer no longer supports `not`; use reverse comparisons or the expression system's `!` instead)
 
 </details>
 
@@ -175,7 +181,9 @@ Flow control is also a built-in capability of the protocol layer, used to orches
 // Actions inside a trigger can use flow nodes
 const trigger = defineTrigger({
   id: 'submit-profile',
-  event: { type: 'button.click', source: 'save-btn' },
+  events: [
+    { type: 'button.click', source: 'save-btn' }
+  ],
   actions: [
     sequence(
       { type: 'form.validate', params: { formId: 'profile' } },
@@ -238,26 +246,20 @@ The Triggerix portion (interaction triggers) emitted by the AI:
 [
   {
     "id": "validate-nickname",
-    "event": { "type": "blur", "source": "nickname-input" },
-    "conditions": {
-      "type": "and",
-      "conditions": [
-        { "left": { "$ref": "nickname-input.value" }, "operator": "eq", "right": "" }
-      ]
-    },
+    "events": [{ "type": "blur", "source": "nickname-input" }],
+    "conditions": [
+      { "left": { "$ref": "nickname-input.value" }, "operator": "eq", "right": "" }
+    ],
     "actions": [
       { "type": "showToast", "params": { "message": "昵称不能为空" } }
     ]
   },
   {
     "id": "submit-nickname",
-    "event": { "type": "click", "source": "submit-btn" },
-    "conditions": {
-      "type": "and",
-      "conditions": [
-        { "left": { "$ref": "nickname-input.value" }, "operator": "neq", "right": "" }
-      ]
-    },
+    "events": [{ "type": "click", "source": "submit-btn" }],
+    "conditions": [
+      { "left": { "$ref": "nickname-input.value" }, "operator": "neq", "right": "" }
+    ],
     "actions": [
       {
         "type": "callAPI",

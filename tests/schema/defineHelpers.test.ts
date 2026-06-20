@@ -2,6 +2,7 @@ import {
   defineAction,
   defineCondition,
   defineConditionGroup,
+  defineConditions,
   defineEvent,
   defineTrigger
 } from '@triggerix/schema'
@@ -27,7 +28,13 @@ describe('define helpers', () => {
     expect(defineConditionGroup(validConditionGroup)).toBe(validConditionGroup)
   })
 
-  it('defineAction returns the input as-is', () => {
+  it('defineConditions returns the variadic args as an array', () => {
+    const group = { type: 'or' as const, conditions: [validCondition] }
+    const result = defineConditions(validCondition, group)
+    expect(result).toEqual([validCondition, group])
+  })
+
+  it('defineActions returns the input as-is', () => {
     expect(defineAction(validAction)).toBe(validAction)
   })
 

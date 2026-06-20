@@ -2,7 +2,7 @@ import type { Trigger } from '@triggerix/core'
 import type { FunctionRegistry } from './expressionEvaluator'
 import type { ActionHandler, RuntimeContext, RuntimeOptions } from './types'
 import { ActionRegistry } from './actionRegistry'
-import { evaluateConditionGroup } from './conditionEvaluator'
+import { evaluateConditions } from './conditionEvaluator'
 import { EventRegistry } from './eventRegistry'
 import { executeActionNode } from './flowExecutor'
 
@@ -33,11 +33,11 @@ export interface TriggerixRuntime {
   /**
    * Emit an event - runs all matching triggers.
    *
-   * - `type`: the event type id (e.g. ''button.click'')
-   * - `source`: the originating component instance name (e.g. ''save'').
-   *   Triggers whose `event.source` is set are only fired when `source`
-   *   matches exactly. Triggers whose `event.source` is unset fire for any
-   *   source (including the `undefined` case).
+   * Matching uses OR semantics across `trigger.events`:
+   * - `type`: the event type id (e.g. 'button.click').
+   * - `source`: per-event `source` is checked individually.
+   *   - An event with `source` unset matches any source (including `undefined`).
+   *   - An event with `source` set must equal the incoming `source` exactly.
    * - `payload`: arbitrary event payload merged into the runtime context.
    */
   emit: (type: string, source?: string, payload?: Record<string, unknown>) => Promise<void>
@@ -102,20 +102,20 @@ export function createRuntime(options: RuntimeOptions = {}): TriggerixRuntime {
     source?: string,
     payload?: Record<string, unknown>
   ): Promise<void> {
-    // Find matching triggers
+    // Find matching triggers (OR across trigger.events)
     const matchingTriggers = triggers.filter((trigger) => {
-      // event.type must match
-      if (trigger.event.type !== type)
-        return false
-
-      // event.source matching:
-      // - trigger.event.source unset -> matches any source (including undefined)
-      // - trigger.event.source set   -> must equal incoming source exactly
-      if (trigger.event.source !== undefined && trigger.event.source !== source) {
-        return false
-      }
-
-      return true
+      return trigger.events.some((event) => {
+        // type must match
+        if (event.type !== type)
+          return false
+        // event.source matching:
+        // - event.source unset -> matches any source (including undefined)
+        // - event.source set   -> must equal incoming source exactly
+        if (event.source !== undefined && event.source !== source) {
+          return false
+        }
+        return true
+      })
     })
 
     // Execute matching triggers
@@ -127,9 +127,9 @@ export function createRuntime(options: RuntimeOptions = {}): TriggerixRuntime {
         ...payload
       }
 
-      // Evaluate conditions
+      // Evaluate conditions (flat array with implicit AND + explicit groups)
       if (trigger.conditions) {
-        const passed = evaluateConditionGroup(trigger.conditions, context, functions)
+        const passed = evaluateConditions(trigger.conditions, context, functions)
         if (!passed)
           continue
       }

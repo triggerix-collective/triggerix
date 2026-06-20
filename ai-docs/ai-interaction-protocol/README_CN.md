@@ -138,10 +138,10 @@ runtime.registerAction('file.pick', (params) => {
 <details>
 <summary><strong>条件操作符（内置，无需注册）</strong></summary>
 
-条件是协议层内置能力，开发者无需注册，直接在触发器中使用：
+条件是协议层内置能力，开发者无需注册，直接在触发器中使用。**条件是扁平数组**：非 group 元素默认隐式 AND，group 元素可显式声明 `and` / `or` 并支持嵌套。
 
 ```typescript
-import { defineCondition, defineConditionGroup } from '@triggerix/schema'
+import { defineCondition, defineConditionGroup, defineConditions } from '@triggerix/schema'
 
 // 单个条件
 const isEmpty = defineCondition({
@@ -150,8 +150,14 @@ const isEmpty = defineCondition({
   right: ''
 })
 
-// 条件组合
-const canSubmit = defineConditionGroup({
+// 条件组合：扁平数组 + 显式 group
+const canSubmit = defineConditions(
+  { left: { $ref: 'input.value' }, operator: 'neq', right: '' },
+  { left: { $ref: 'user.age' }, operator: 'gte', right: 18 }
+)
+
+// 等价的显式 group 写法
+const canSubmitAlt = defineConditionGroup({
   type: 'and',
   conditions: [
     { left: { $ref: 'input.value' }, operator: 'neq', right: '' },
@@ -162,7 +168,7 @@ const canSubmit = defineConditionGroup({
 
 支持的操作符：`eq` · `neq` · `gt` · `gte` · `lt` · `lte` · `exists`
 
-支持的逻辑组合：`and` · `or` · `not`
+支持的逻辑组合：`and` · `or`（条件层不再支持 `not`，可用反向比较或表达式系统的 `!` 替代）
 
 </details>
 
@@ -175,7 +181,9 @@ const canSubmit = defineConditionGroup({
 // 触发器中的 actions 可以使用流程节点
 const trigger = defineTrigger({
   id: 'submit-profile',
-  event: { type: 'button.click', source: 'save-btn' },
+  events: [
+    { type: 'button.click', source: 'save-btn' }
+  ],
   actions: [
     sequence(
       { type: 'form.validate', params: { formId: 'profile' } },
@@ -238,26 +246,20 @@ AI 输出的 Triggerix 部分（交互触发器）：
 [
   {
     "id": "validate-nickname",
-    "event": { "type": "blur", "source": "nickname-input" },
-    "conditions": {
-      "type": "and",
-      "conditions": [
-        { "left": { "$ref": "nickname-input.value" }, "operator": "eq", "right": "" }
-      ]
-    },
+    "events": [{ "type": "blur", "source": "nickname-input" }],
+    "conditions": [
+      { "left": { "$ref": "nickname-input.value" }, "operator": "eq", "right": "" }
+    ],
     "actions": [
       { "type": "showToast", "params": { "message": "昵称不能为空" } }
     ]
   },
   {
     "id": "submit-nickname",
-    "event": { "type": "click", "source": "submit-btn" },
-    "conditions": {
-      "type": "and",
-      "conditions": [
-        { "left": { "$ref": "nickname-input.value" }, "operator": "neq", "right": "" }
-      ]
-    },
+    "events": [{ "type": "click", "source": "submit-btn" }],
+    "conditions": [
+      { "left": { "$ref": "nickname-input.value" }, "operator": "neq", "right": "" }
+    ],
     "actions": [
       {
         "type": "callAPI",

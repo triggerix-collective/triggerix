@@ -1,6 +1,7 @@
-import type { Condition, ConditionGroup, Expression, Reference, Value } from '@triggerix/core'
+import type { Condition, ConditionGroup, ConditionItem, Expression, Reference, Value } from '@triggerix/core'
 import type { FunctionRegistry } from './expressionEvaluator'
 import type { RuntimeContext } from './types'
+import { isConditionGroup } from '@triggerix/core'
 import { evaluateExprNode } from './expressionEvaluator'
 import { getNestedValue } from './utils'
 
@@ -64,7 +65,73 @@ export function evaluateCondition(condition: Condition, context: RuntimeContext,
 }
 
 /**
- * Evaluate a condition group (AND / OR / NOT)
+ * Evaluate a flat condition array (used by `Trigger.conditions` and `ActionIf.condition`).
+ *
+ * Three-phase evaluation with short-circuit:
+ *   1. Non-group items: implicit AND. First false short-circuits the entire array.
+ *   2. Explicit `and` groups: every group must pass (internal short-circuit is the group's job).
+ *   3. Explicit `or` groups: at least one must pass. If none exist, this phase is a no-op.
+ *
+ * An empty array returns `true` (no constraints = pass).
+ */
+export function evaluateConditions(
+  items: ConditionItem[],
+  context: RuntimeContext,
+  functions: FunctionRegistry = new Map()
+): boolean {
+  if (items.length === 0)
+    return true
+
+  // Single-pass partition into three buckets. Reusing two arrays keeps the
+  // inner loops branch-free; only the partition loop pays for classification.
+  const andGroups: ConditionGroup[] = []
+  const orGroups: ConditionGroup[] = []
+  let implicitAndIdx = 0
+  const implicitAnds: Condition[] = Array.from({ length: items.length })
+  let andGroupCount = 0
+  let orGroupCount = 0
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
+    if (isConditionGroup(item)) {
+      if (item.type === 'and') {
+        andGroups[andGroupCount++] = item
+      }
+      else {
+        orGroups[orGroupCount++] = item
+      }
+    }
+    else {
+      implicitAnds[implicitAndIdx++] = item
+    }
+  }
+  implicitAnds.length = implicitAndIdx
+
+  // Phase 1: implicit AND, short-circuit
+  for (let i = 0; i < implicitAnds.length; i++) {
+    if (!evaluateCondition(implicitAnds[i], context, functions))
+      return false
+  }
+
+  // Phase 2: every explicit AND group must pass
+  for (let i = 0; i < andGroupCount; i++) {
+    if (!evaluateConditionGroup(andGroups[i], context, functions))
+      return false
+  }
+
+  // Phase 3: at least one explicit OR group must pass (no-op when absent)
+  if (orGroupCount === 0)
+    return true
+  for (let i = 0; i < orGroupCount; i++) {
+    if (evaluateConditionGroup(orGroups[i], context, functions))
+      return true
+  }
+  return false
+}
+
+/**
+ * Evaluate a condition group (AND / OR).
+ * 'not' is intentionally not supported; use reverse comparisons or the expression system.
  */
 export function evaluateConditionGroup(group: ConditionGroup, context: RuntimeContext, functions: FunctionRegistry = new Map()): boolean {
   switch (group.type) {
@@ -72,19 +139,15 @@ export function evaluateConditionGroup(group: ConditionGroup, context: RuntimeCo
       return group.conditions.every(c => evaluateItem(c, context, functions))
     case 'or':
       return group.conditions.some(c => evaluateItem(c, context, functions))
-    case 'not':
-      return !group.conditions.some(c => evaluateItem(c, context, functions))
-    default:
-      return false
   }
 }
 
 /**
- * Evaluate a condition or condition group
+ * Evaluate a condition or condition group (internal recursion for group nesting)
  */
 function evaluateItem(item: Condition | ConditionGroup, context: RuntimeContext, functions: FunctionRegistry): boolean {
-  if ('operator' in item) {
-    return evaluateCondition(item as Condition, context, functions)
+  if (isConditionGroup(item)) {
+    return evaluateConditionGroup(item, context, functions)
   }
-  return evaluateConditionGroup(item as ConditionGroup, context, functions)
+  return evaluateCondition(item, context, functions)
 }

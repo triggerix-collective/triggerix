@@ -1,6 +1,6 @@
 import type { JSONSchema } from './types'
 import { generateActionSchema } from './actionSchema'
-import { generateConditionGroupSchema, generateConditionSchema } from './conditionSchema'
+import { generateConditionGroupSchema, generateConditionItemSchema, generateConditionSchema } from './conditionSchema'
 import { generateEventSchema } from './eventSchema'
 import {
   generateExprBinarySchema,
@@ -31,7 +31,7 @@ export function generateTriggerSchema(): JSONSchema {
     $schema: 'http://json-schema.org/draft-07/schema#',
     $id: 'https://triggerix.dev/schema/trigger.json',
     title: 'Triggerix Trigger',
-    description: 'A language-agnostic ECA trigger: Event → Condition → Action',
+    description: 'A language-agnostic ECA trigger: Events (OR) → Conditions (flat array) → Actions',
     type: 'object',
     properties: {
       id: {
@@ -42,19 +42,29 @@ export function generateTriggerSchema(): JSONSchema {
         type: 'string',
         description: 'Human-readable trigger name'
       },
-      event: { $ref: '#/definitions/Event' },
-      conditions: { $ref: '#/definitions/ConditionGroup' },
+      events: {
+        type: 'array',
+        description: 'Events that activate this trigger. OR semantics: fires when any event matches.',
+        items: { $ref: '#/definitions/Event' },
+        minItems: 1
+      },
+      conditions: {
+        type: 'array',
+        description: 'Conditions: non-group items imply implicit AND; group items use explicit and/or with arbitrary nesting.',
+        items: { $ref: '#/definitions/ConditionItem' }
+      },
       actions: {
         type: 'array',
         items: { $ref: '#/definitions/ActionNode' },
         minItems: 1
       }
     },
-    required: ['id', 'event', 'actions'],
+    required: ['id', 'events', 'actions'],
     additionalProperties: false,
     definitions: {
       Event: generateEventSchema(),
       Condition: generateConditionSchema(),
+      ConditionItem: generateConditionItemSchema(),
       ConditionGroup: generateConditionGroupSchema(),
       Action: generateActionSchema(),
       ActionNode: generateActionNodeSchema(),

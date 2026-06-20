@@ -195,7 +195,7 @@ describe('executeActionNode - if', () => {
     await executeActionNode(
       {
         type: 'if',
-        condition: { left: 1, operator: 'eq', right: 1 },
+        condition: [{ left: 1, operator: 'eq', right: 1 }],
         then: [{ type: 'then' }],
         else: [{ type: 'else' }]
       },
@@ -219,7 +219,7 @@ describe('executeActionNode - if', () => {
     await executeActionNode(
       {
         type: 'if',
-        condition: { left: 1, operator: 'eq', right: 2 },
+        condition: [{ left: 1, operator: 'eq', right: 2 }],
         then: [{ type: 'then' }],
         else: [{ type: 'else' }]
       },
@@ -241,7 +241,7 @@ describe('executeActionNode - if', () => {
     await executeActionNode(
       {
         type: 'if',
-        condition: { left: 1, operator: 'eq', right: 2 },
+        condition: [{ left: 1, operator: 'eq', right: 2 }],
         then: [{ type: 'then' }]
       },
       makeContext(),
@@ -252,7 +252,7 @@ describe('executeActionNode - if', () => {
     expect(thenFn).not.toHaveBeenCalled()
   })
 
-  it('supports ConditionGroup as condition', async () => {
+  it('supports nested ConditionGroup inside condition array', async () => {
     const thenFn = vi.fn()
     const registry = new ActionRegistry()
     registry.register({ type: 'then', handler: thenFn })
@@ -260,13 +260,34 @@ describe('executeActionNode - if', () => {
     await executeActionNode(
       {
         type: 'if',
-        condition: {
-          type: 'and',
-          conditions: [
-            { left: 1, operator: 'eq', right: 1 },
-            { left: 'a', operator: 'eq', right: 'a' }
-          ]
-        },
+        condition: [
+          {
+            type: 'and',
+            conditions: [
+              { left: 1, operator: 'eq', right: 1 },
+              { left: 'a', operator: 'eq', right: 'a' }
+            ]
+          }
+        ],
+        then: [{ type: 'then' }]
+      },
+      makeContext(),
+      registry,
+      emptyFns
+    )
+
+    expect(thenFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('empty condition array passes (no constraints)', async () => {
+    const thenFn = vi.fn()
+    const registry = new ActionRegistry()
+    registry.register({ type: 'then', handler: thenFn })
+
+    await executeActionNode(
+      {
+        type: 'if',
+        condition: [],
         then: [{ type: 'then' }]
       },
       makeContext(),

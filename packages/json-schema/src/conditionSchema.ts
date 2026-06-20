@@ -1,5 +1,5 @@
 import type { JSONSchema } from './types'
-import { LOGICAL_OPERATORS, VALID_OPERATORS } from '@triggerix/core'
+import { CONDITION_GROUP_TYPES, VALID_OPERATORS } from '@triggerix/core'
 import { generateValueSchema } from './valueSchema'
 
 /**
@@ -31,26 +31,34 @@ export function generateConditionSchema(): JSONSchema {
 }
 
 /**
- * Generate JSON Schema for ConditionGroup
+ * Generate JSON Schema for a single ConditionItem (Condition or ConditionGroup).
+ * Used inside condition arrays of `Trigger.conditions` and `ActionIf.condition`.
+ */
+export function generateConditionItemSchema(): JSONSchema {
+  return {
+    oneOf: [
+      { $ref: '#/definitions/Condition' },
+      { $ref: '#/definitions/ConditionGroup' }
+    ]
+  }
+}
+
+/**
+ * Generate JSON Schema for ConditionGroup (AND/OR only; `not` is intentionally absent).
  */
 export function generateConditionGroupSchema(): JSONSchema {
   return {
     type: 'object',
     title: 'ConditionGroup',
-    description: 'Logical grouping of conditions (AND/OR/NOT)',
+    description: 'Logical grouping of conditions (AND/OR). `not` is not supported here — use reverse comparisons or the expression system.',
     properties: {
       type: {
         type: 'string',
-        enum: [...LOGICAL_OPERATORS]
+        enum: [...CONDITION_GROUP_TYPES]
       },
       conditions: {
         type: 'array',
-        items: {
-          oneOf: [
-            { $ref: '#/definitions/Condition' },
-            { $ref: '#/definitions/ConditionGroup' }
-          ]
-        },
+        items: { $ref: '#/definitions/ConditionItem' },
         minItems: 1
       }
     },

@@ -1,8 +1,7 @@
 import type { ValidationError, ValidationResult } from './errors'
-import { isConditionGroup } from '@triggerix/core'
 import { createError, invalidResult, validResult } from './errors'
 import { validateAction } from './validateAction'
-import { validateCondition, validateConditionGroup } from './validateCondition'
+import { validateConditionItems } from './validateCondition'
 
 /**
  * Validate an ActionNode (Action or Flow control node)
@@ -123,22 +122,14 @@ function validateActionTryCatch(n: Record<string, unknown>, path: string): Valid
 function validateActionIf(n: Record<string, unknown>, path: string): ValidationResult {
   const errors: ValidationError[] = []
 
-  // condition is required
+  // condition is required and must be a flat array of ConditionItem
   if (!n.condition) {
     errors.push(createError(`${path}.condition`, 'If must have a condition'))
   }
   else {
-    // Determine if it's a ConditionGroup or Condition
-    if (isConditionGroup(n.condition)) {
-      const r = validateConditionGroup(n.condition, `${path}.condition`)
-      if (!r.valid)
-        errors.push(...r.errors)
-    }
-    else {
-      const r = validateCondition(n.condition, `${path}.condition`)
-      if (!r.valid)
-        errors.push(...r.errors)
-    }
+    const r = validateConditionItems(n.condition, `${path}.condition`)
+    if (!r.valid)
+      errors.push(...r.errors)
   }
 
   // then is required

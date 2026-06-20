@@ -1,6 +1,6 @@
 import type { Operator } from '@triggerix/core'
-import type { ValidationResult } from './errors'
-import { isConditionGroup, VALID_OPERATORS } from '@triggerix/core'
+import type { ValidationError, ValidationResult } from './errors'
+import { CONDITION_GROUP_TYPES, isConditionGroup, VALID_OPERATORS } from '@triggerix/core'
 import { createError, invalidResult, validResult } from './errors'
 import { validateValue } from './validateValue'
 
@@ -47,7 +47,8 @@ export function validateCondition(condition: unknown, path = 'condition'): Valid
 }
 
 /**
- * Validate a condition group (AND / OR / NOT)
+ * Validate a condition group (AND / OR only).
+ * `not` is intentionally rejected — see `validateConditionGroup` for the rationale.
  */
 export function validateConditionGroup(group: unknown, path = 'conditions'): ValidationResult {
   const errors = []
@@ -59,8 +60,11 @@ export function validateConditionGroup(group: unknown, path = 'conditions'): Val
   const g = group as Record<string, unknown>
 
   // Validate type
-  if (!g.type || !['and', 'or', 'not'].includes(g.type as string)) {
-    errors.push(createError(`${path}.type`, 'ConditionGroup type must be "and", "or", or "not"'))
+  if (!g.type || !CONDITION_GROUP_TYPES.includes(g.type as never)) {
+    errors.push(createError(
+      `${path}.type`,
+      `ConditionGroup type must be one of: ${CONDITION_GROUP_TYPES.join(', ')} ('not' is not supported)`
+    ))
   }
 
   // Validate conditions array
@@ -69,24 +73,41 @@ export function validateConditionGroup(group: unknown, path = 'conditions'): Val
   }
   else {
     for (let i = 0; i < g.conditions.length; i++) {
-      const item = g.conditions[i]
-      const itemPath = `${path}.conditions[${i}]`
-
-      // Determine if it's a ConditionGroup or a Condition
-      if (isConditionGroup(item)) {
-        const groupResult = validateConditionGroup(item, itemPath)
-        if (!groupResult.valid) {
-          errors.push(...groupResult.errors)
-        }
-      }
-      else {
-        const condResult = validateCondition(item, itemPath)
-        if (!condResult.valid) {
-          errors.push(...condResult.errors)
-        }
+      const itemResult = validateConditionItem(g.conditions[i], `${path}.conditions[${i}]`)
+      if (!itemResult.valid) {
+        errors.push(...itemResult.errors)
       }
     }
   }
 
   return errors.length > 0 ? invalidResult(errors) : validResult()
+}
+
+/**
+ * Validate a flat condition array (used by `Trigger.conditions` and `ActionIf.condition`).
+ * Each element must be either a Condition or a ConditionGroup; groups are validated recursively.
+ */
+export function validateConditionItems(items: unknown, path = 'conditions'): ValidationResult {
+  if (!Array.isArray(items)) {
+    return invalidResult([createError(path, 'Conditions must be an array')])
+  }
+
+  const errors: ValidationError[] = []
+  for (let i = 0; i < items.length; i++) {
+    const itemResult = validateConditionItem(items[i], `${path}[${i}]`)
+    if (!itemResult.valid) {
+      errors.push(...itemResult.errors)
+    }
+  }
+  return errors.length > 0 ? invalidResult(errors) : validResult()
+}
+
+/**
+ * Internal: dispatch a single ConditionItem to the right validator.
+ */
+function validateConditionItem(item: unknown, path: string): ValidationResult {
+  if (isConditionGroup(item)) {
+    return validateConditionGroup(item, path)
+  }
+  return validateCondition(item, path)
 }

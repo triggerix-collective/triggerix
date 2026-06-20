@@ -4,8 +4,7 @@ import type {
   ActionParallel,
   ActionSequence,
   ActionTryCatch,
-  Condition,
-  ConditionGroup
+  ConditionItem
 } from '@triggerix/core'
 
 /**
@@ -39,10 +38,12 @@ export function tryCatch(options: {
 }
 
 /**
- * Create a conditional branch flow node
+ * Create a conditional branch flow node.
+ * `condition` uses the same flat array shape as `Trigger.conditions`:
+ * non-group items imply implicit AND; group items (`and`/`or`) are evaluated per type.
  */
 export function actionIf(options: {
-  condition: Condition | ConditionGroup
+  condition: ConditionItem[]
   then: ActionNode[]
   else?: ActionNode[]
 }): ActionIf {

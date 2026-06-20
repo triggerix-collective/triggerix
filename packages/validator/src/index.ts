@@ -1,7 +1,7 @@
 export type { ValidationError, ValidationResult } from './errors'
 export { validateAction } from './validateAction'
 export { validateActionNode } from './validateActionNode'
-export { validateCondition, validateConditionGroup } from './validateCondition'
+export { validateCondition, validateConditionGroup, validateConditionItems } from './validateCondition'
 export { validateEvent } from './validateEvent'
 export { validateExpression, validateExprNode, validateExprOperand } from './validateExpression'
 export { validateTrigger } from './validateTrigger'

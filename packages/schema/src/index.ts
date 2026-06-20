@@ -1,5 +1,5 @@
 export { defineAction } from './defineAction'
-export { defineCondition, defineConditionGroup } from './defineCondition'
+export { defineCondition, defineConditionGroup, defineConditions } from './defineCondition'
 export { defineEvent } from './defineEvent'
 export { defineTrigger } from './defineTrigger'
 export { binary, call, concat, expr, exprCompare, logical, ternary, unary } from './expr'

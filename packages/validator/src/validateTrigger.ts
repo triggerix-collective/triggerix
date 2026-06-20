@@ -1,7 +1,7 @@
 import type { ValidationResult } from './errors'
 import { createError, invalidResult, validResult } from './errors'
 import { validateActionNode } from './validateActionNode'
-import { validateConditionGroup } from './validateCondition'
+import { validateConditionItems } from './validateCondition'
 import { validateEvent } from './validateEvent'
 
 /**
@@ -26,20 +26,25 @@ export function validateTrigger(trigger: unknown): ValidationResult {
     errors.push(createError('trigger.name', 'Trigger name must be a string'))
   }
 
-  // Validate event
-  if (!r.event) {
-    errors.push(createError('trigger.event', 'Trigger must have an event'))
+  // Validate events (array, at least one element, each is a valid Event)
+  if (!Array.isArray(r.events)) {
+    errors.push(createError('trigger.events', 'Trigger must have an events array'))
+  }
+  else if (r.events.length === 0) {
+    errors.push(createError('trigger.events', 'Trigger.events must have at least one event'))
   }
   else {
-    const eventResult = validateEvent(r.event, 'trigger.event')
-    if (!eventResult.valid) {
-      errors.push(...eventResult.errors)
+    for (let i = 0; i < r.events.length; i++) {
+      const eventResult = validateEvent(r.events[i], `trigger.events[${i}]`)
+      if (!eventResult.valid) {
+        errors.push(...eventResult.errors)
+      }
     }
   }
 
-  // Validate conditions (optional)
+  // Validate conditions (optional, flat array of ConditionItem)
   if (r.conditions !== undefined) {
-    const condResult = validateConditionGroup(r.conditions, 'trigger.conditions')
+    const condResult = validateConditionItems(r.conditions, 'trigger.conditions')
     if (!condResult.valid) {
       errors.push(...condResult.errors)
     }

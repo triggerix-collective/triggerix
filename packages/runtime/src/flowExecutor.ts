@@ -1,9 +1,8 @@
-import type { Action, ActionIf, ActionNode, ActionParallel, ActionSequence, ActionTryCatch, Condition } from '@triggerix/core'
+import type { Action, ActionIf, ActionNode, ActionParallel, ActionSequence, ActionTryCatch } from '@triggerix/core'
 import type { ActionRegistry } from './actionRegistry'
 import type { FunctionRegistry } from './expressionEvaluator'
 import type { RuntimeContext } from './types'
-import { isConditionGroup } from '@triggerix/core'
-import { evaluateCondition, evaluateConditionGroup } from './conditionEvaluator'
+import { evaluateConditions } from './conditionEvaluator'
 
 /**
  * Execute an ActionNode (dispatches to appropriate executor)
@@ -102,7 +101,9 @@ async function executeTryCatch(
 }
 
 /**
- * Execute conditional branch
+ * Execute conditional branch.
+ * `ActionIf.condition` uses the same flat array shape as `Trigger.conditions`,
+ * but evaluation is plain implicit AND (no 3-stage prioritization).
  */
 async function executeIf(
   node: ActionIf,
@@ -110,14 +111,7 @@ async function executeIf(
   actionRegistry: ActionRegistry,
   functions: FunctionRegistry
 ): Promise<void> {
-  let passed: boolean
-
-  if (isConditionGroup(node.condition)) {
-    passed = evaluateConditionGroup(node.condition, context, functions)
-  }
-  else {
-    passed = evaluateCondition(node.condition as Condition, context, functions)
-  }
+  const passed = evaluateConditions(node.condition, context, functions)
 
   if (passed) {
     for (const action of node.then) {

@@ -25,5 +25,5 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
-  "include": ["*.ts", "./packages/**/*.ts", "./scripts/**/*.ts"]
+  "include": ["*.ts", "./packages/**/*.ts", "./scripts/**/*.ts", "./tests/**/*.ts"]
 }

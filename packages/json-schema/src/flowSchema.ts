@@ -81,7 +81,8 @@ export function generateActionTryCatchSchema(): JSONSchema {
 }
 
 /**
- * Generate JSON Schema for ActionIf
+ * Generate JSON Schema for ActionIf.
+ * `condition` mirrors `Trigger.conditions`: a flat array of Condition or ConditionGroup.
  */
 export function generateActionIfSchema(): JSONSchema {
   return {
@@ -89,10 +90,9 @@ export function generateActionIfSchema(): JSONSchema {
     properties: {
       type: { const: 'if' },
       condition: {
-        oneOf: [
-          { $ref: '#/definitions/Condition' },
-          { $ref: '#/definitions/ConditionGroup' }
-        ]
+        type: 'array',
+        items: { $ref: '#/definitions/ConditionItem' },
+        minItems: 1
       },
       then: {
         type: 'array',

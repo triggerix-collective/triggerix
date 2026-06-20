@@ -1,4 +1,4 @@
-import type { Action, Condition, ConditionGroup, Event, Trigger } from '@triggerix/core'
+import type { Action, Condition, ConditionGroup, ConditionItem, Event, Trigger } from '@triggerix/core'
 
 /**
  * Valid Event fixture
@@ -23,6 +23,12 @@ export const validConditionGroup: ConditionGroup = {
 }
 
 /**
+ * Valid flat condition array fixture (ConditionItem[]).
+ * Mirrors the shape used by Trigger.conditions and ActionIf.condition.
+ */
+export const validConditionsArray: ConditionItem[] = [validCondition]
+
+/**
  * Valid Action fixture
  */
 export const validAction: Action = {
@@ -36,7 +42,7 @@ export const validAction: Action = {
 export const validTrigger: Trigger = {
   id: 'trigger-1',
   name: 'Test Trigger',
-  event: validEvent,
-  conditions: validConditionGroup,
+  events: [validEvent],
+  conditions: validConditionsArray,
   actions: [validAction]
 }

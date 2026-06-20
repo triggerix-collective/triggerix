@@ -43,6 +43,10 @@ describe('@triggerix/triggerix aggregate exports', () => {
     it('should expose validateCondition', () => {
       expect(typeof triggerix.validateCondition).toBe('function')
     })
+
+    it('should expose validateConditionItems', () => {
+      expect(typeof triggerix.validateConditionItems).toBe('function')
+    })
   })
 
   describe('re-exports from @triggerix/runtime', () => {
@@ -57,11 +61,19 @@ describe('@triggerix/triggerix aggregate exports', () => {
     it('should expose evaluateCondition', () => {
       expect(typeof triggerix.evaluateCondition).toBe('function')
     })
+
+    it('should expose evaluateConditions (top-level array entry)', () => {
+      expect(typeof triggerix.evaluateConditions).toBe('function')
+    })
   })
 
   describe('re-exports from @triggerix/json-schema', () => {
     it('should expose generateTriggerSchema', () => {
       expect(typeof triggerix.generateTriggerSchema).toBe('function')
+    })
+
+    it('should expose generateConditionItemSchema', () => {
+      expect(typeof triggerix.generateConditionItemSchema).toBe('function')
     })
   })
 })

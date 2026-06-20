@@ -197,23 +197,21 @@ AI 根据用户意图自主组装，输出：
   ],
   "triggers": [
     {
-      "event": { "type": "input.blur", "source": "nickname" },
-      "conditions": {
-        "type": "and",
-        "conditions": [
-          { "left": { "$ref": "nickname.value" }, "operator": "eq", "right": "" }
-        ]
-      },
+      "events": [
+        { "type": "input.blur", "source": "nickname" }
+      ],
+      "conditions": [
+        { "left": { "$ref": "nickname.value" }, "operator": "eq", "right": "" }
+      ],
       "actions": [{ "type": "toast.show", "params": { "message": "昵称不能为空" } }]
     },
     {
-      "event": { "type": "button.click", "source": "save" },
-      "conditions": {
-        "type": "and",
-        "conditions": [
-          { "left": { "$ref": "nickname.value" }, "operator": "neq", "right": "" }
-        ]
-      },
+      "events": [
+        { "type": "button.click", "source": "save" }
+      ],
+      "conditions": [
+        { "left": { "$ref": "nickname.value" }, "operator": "neq", "right": "" }
+      ],
       "actions": [{ "type": "api.request", "params": { "method": "POST", "url": "/api/nickname", "body": { "nickname": { "$ref": "nickname.value" } } } }]
     }
   ]
@@ -261,7 +259,9 @@ function mount(output, container) {
     const el = component.create(instance.props, (eventType, payload) => {
       // 2. 组件 emit → 匹配触发器并执行
       const matchedTriggers = output.triggers.filter(
-        t => t.event.type === eventType && t.event.source === instance.name
+        t => t.events.some(
+          e => e.type === eventType && e.source === instance.name
+        )
       )
       for (const trigger of matchedTriggers) {
         const context = buildContext(elements)
@@ -349,7 +349,7 @@ create 内部：创建 DOM 元素 + 循环 bind 配置绑定 addEventListener + 
        ↓
 DOM click 触发 → emit('button.click')（来自 bind('click', 'button.click') 配置）
        ↓
-渲染器匹配触发器：event.type === 'button.click' && event.source === 'save'
+渲染器匹配触发器：events 数组中任一 e.type === 'button.click' 且 e.source === 'save' 则命中
        ↓
 解析 $ref：从 scope Map 中取 elements.get("nickname").value
        ↓
