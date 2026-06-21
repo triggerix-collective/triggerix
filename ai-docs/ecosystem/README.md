@@ -1,12 +1,12 @@
 # Triggerix Ecosystem
 
-A consolidated survey of every `triggerix-*` project under `D:/Projects` and every library (internal + external) they depend on, augmented with the official documentation of those external libraries.
+A consolidated survey of every `triggerix-*` project and every library (internal + external) they depend on, augmented with the official documentation of those external libraries.
 
 This document is the canonical map of the ecosystem for both humans and AI assistants. When you need to know "what package owns X", "which projects consume Y", or "what library Z actually does", start here.
 
 ## Table of Contents
 
-- [Projects](projects.md) — one section per repo under `D:/Projects/triggerix*`
+- [Projects](projects.md) — one section per repo
   - [triggerix](projects.md#triggerix) — core monorepo (8 packages, ECA engine)
   - [triggerix-ai](projects.md#triggerix-ai) — AI-generation monorepo (6 packages)
   - [triggerix-ai-component-native](projects.md#triggerix-ai-component-native) — DOM renderer
@@ -51,10 +51,10 @@ All three layers are independent, each expressed as JSON Schema, and uniformly p
 
 ## Repository Layout
 
-Six repositories live under `D:/Projects/`. Each is an independent pnpm workspace or single-package repo; their inter-dependencies are declared via npm `^` ranges in published manifests.
+Six independent repositories make up the ecosystem. Each is an independent pnpm workspace or single-package repo; their inter-dependencies are declared via npm `^` ranges in published manifests.
 
 ```
-D:/Projects/
+<root>/
 ├── triggerix/                       # Core monorepo — ECA engine
 │   └── packages/{core, schema, json-schema, validator,
 │                  runtime, registry, editor, triggerix}

@@ -1,6 +1,6 @@
 # Projects
 
-A repo-by-repo survey of every `triggerix-*` repository under `D:/Projects/`. Each section follows the same shape: **identity → purpose → layout → public surface → dependencies → notable patterns**.
+A repo-by-repo survey of every `triggerix-*` repository. Each section follows the same shape: **identity → purpose → layout → public surface → dependencies → notable patterns**.
 
 Jump to a project:
 - [triggerix](#triggerix) — core monorepo (8 packages, ECA engine)
@@ -14,7 +14,7 @@ Jump to a project:
 
 ## triggerix
 
-> **Repo**: `D:/Projects/triggerix/` · **License**: MIT
+> **Repo**: `triggerix/` · **License**: MIT
 > **Role**: Core engine. Defines the ECA protocol, validates it, and executes it.
 
 The main pnpm-workspace monorepo. Eight independently-publishable packages under `packages/`, all built with [`unbuild`](https://github.com/unjs/unbuild) and tested with [Vitest](https://vitest.dev/).
@@ -90,7 +90,7 @@ The aggregate `triggerix` package sits above the first column. `editor` depends 
 
 ## triggerix-ai
 
-> **Repo**: `D:/Projects/triggerix-ai/`
+> **Repo**: `triggerix-ai/`
 > **Role**: AI-generation layer. Turns a registered catalog into LLM-ready system prompts + tool schemas.
 
 A monorepo of six packages that bridges `@triggerix/registry` and `@triggerix-ai/component` to OpenAI/Anthropic Function Calling. Every package is independently publishable but developed together with workspace deps.
@@ -155,7 +155,7 @@ Same as `triggerix` — `unbuild` (shared `build.common.ts`) + Vitest + ESLint (
 
 ## triggerix-ai-component-native
 
-> **Repo**: `D:/Projects/triggerix-ai-component-native/`
+> **Repo**: `triggerix-ai-component-native/`
 > **Role**: Reference DOM renderer. Implements the `@triggerix-ai/component` protocol with 8 unstyled native elements.
 
 A standalone single-package repo (not part of any workspace). Ships the **prototype renderer** that proves the protocol end-to-end; future production renderers (Vue, React, atom) will live elsewhere.
@@ -232,7 +232,7 @@ triggerix-ai-component-native/
 
 ## triggerix-editor-vue
 
-> **Repo**: `D:/Projects/triggerix-editor-vue/`
+> **Repo**: `triggerix-editor-vue/`
 > **Role**: Vue 3 binding layer for `@triggerix/editor`. Wraps a framework-agnostic editor in Vue reactivity.
 
 Single-package repo. Intentionally tiny — 5 source files, 13 test files. Zero runtime deps beyond Vue 3 and `@triggerix/editor`.
@@ -302,7 +302,7 @@ Lifecycle:
 
 ## triggerix-editor-preset-war3
 
-> **Repo**: `D:/Projects/triggerix-editor-preset-war3/`
+> **Repo**: `triggerix-editor-preset-war3/`
 > **Role**: Domain-agnostic, template-driven editor implementation inspired by the Warcraft III World Editor trigger system.
 
 Despite the "War3" branding, **this package ships no War3 catalog**. It is a generic preset that lets any domain (web automation, IoT rules, game scripting) compose triggers from natural-language templates with `${slot}` placeholders filled by typed Tools.
@@ -416,7 +416,7 @@ parseTemplate (→ Segment[])    resolveSlotDisplayText        toTrigger (→ Tr
 
 ## triggerix-collective.github.io
 
-> **Repo**: `D:/Projects/triggerix-collective.github.io/` (private)
+> **Repo**: `triggerix-collective.github.io/` (private)
 > **Role**: Official showcase site. Demonstrates "visual editing a JSON-described trigger → runtime executes ECA logic" with 5 progressively more complex demos.
 
 A Vue 3 SPA deployed to GitHub Pages via `.github/workflows/deploy-pages.yaml`. All UI copy is Chinese (zh-CN); README ships in both English (`README.md`) and Chinese (`README_CN.md`).

@@ -25,13 +25,13 @@ Every library used across the six `triggerix-*` repos — internal Triggerix pac
 The Triggerix ecosystem ships 14 publishable packages across two monorepos. Every package is independently publishable; internal development uses `workspace:*` deps that resolve at publish time to actual `^` version ranges.
 
 > **Naming convention**:
-> - `@triggerix/*` — core ECA engine (`D:/Projects/triggerix/packages/`)
-> - `@triggerix-ai/*` — AI-generation layer (`D:/Projects/triggerix-ai/packages/`)
+> - `@triggerix/*` — core ECA engine (`triggerix/packages/`)
+> - `@triggerix-ai/*` — AI-generation layer (`triggerix-ai/packages/`)
 > - Two unscoped aggregate packages: `triggerix`, `triggerix-ai`
 
 ### `@triggerix/core`
 
-> Repo: `D:/Projects/triggerix/packages/core/` · Zero deps
+> Repo: `triggerix/packages/core/` · Zero deps
 
 The single source of truth for the ECA protocol — types, `as const` operator tuples, and a structural type guard. **Zero runtime dependencies.**
 
@@ -48,7 +48,7 @@ The single source of truth for the ECA protocol — types, `as const` operator t
 
 ### `@triggerix/schema`
 
-> Repo: `D:/Projects/triggerix/packages/schema/` · Deps: `core`
+> Repo: `triggerix/packages/schema/` · Deps: `core`
 
 DSL builders — the developer-friendly authoring API. Most `define*` functions are identity (return input unchanged) for type anchoring; the expression and flow builders construct AST nodes.
 
@@ -59,7 +59,7 @@ DSL builders — the developer-friendly authoring API. Most `define*` functions 
 
 ### `@triggerix/json-schema`
 
-> Repo: `D:/Projects/triggerix/packages/json-schema/` · Deps: `core`
+> Repo: `triggerix/packages/json-schema/` · Deps: `core`
 
 JSON Schema (draft-07 subset) generator. Hand-rolled `JSONSchema` type — no `ajv` or similar runtime deps.
 
@@ -72,7 +72,7 @@ JSON Schema (draft-07 subset) generator. Hand-rolled `JSONSchema` type — no `a
 
 ### `@triggerix/validator`
 
-> Repo: `D:/Projects/triggerix/packages/validator/` · Deps: `core`
+> Repo: `triggerix/packages/validator/` · Deps: `core`
 
 Pure-function validator. **Never throws** — returns `{ valid, errors[] }` with errors classified as `'structural'` or `'semantic'` and reported via dotted/indexed paths (`'actions[0].params.body.url'`).
 
@@ -80,7 +80,7 @@ Pure-function validator. **Never throws** — returns `{ valid, errors[] }` with
 
 ### `@triggerix/runtime`
 
-> Repo: `D:/Projects/triggerix/packages/runtime/` · Deps: `core`
+> Repo: `triggerix/packages/runtime/` · Deps: `core`
 
 Reference runtime implementation. The only package that *executes* triggers; everything else is authoring/validation.
 
@@ -98,7 +98,7 @@ Reference runtime implementation. The only package that *executes* triggers; eve
 
 ### `@triggerix/registry`
 
-> Repo: `D:/Projects/triggerix/packages/registry/` · Zero deps
+> Repo: `triggerix/packages/registry/` · Zero deps
 
 Generic, framework-agnostic registry. Three `Map`s (events/actions/conditions), O(1) lookups, tree-shakable, zero deps. `BaseRegistry<TEventDef, TActionDef, TConditionDef>` is the base that both `@triggerix-ai/registry` and `@triggerix/editor`'s War3 preset extend.
 
@@ -106,7 +106,7 @@ Generic, framework-agnostic registry. Three `Map`s (events/actions/conditions), 
 
 ### `@triggerix/editor`
 
-> Repo: `D:/Projects/triggerix/packages/editor/` · Deps: `core`, `registry`
+> Repo: `triggerix/packages/editor/` · Deps: `core`, `registry`
 
 Framework-agnostic editor infrastructure. Defines the `Editor<TState>` interface that any framework-specific binding (Vue, React, future atom) implements on top of, and `ObservableState<T>` pub/sub primitive.
 
@@ -117,13 +117,13 @@ Framework-agnostic editor infrastructure. Defines the `Editor<TState>` interface
 
 ### `triggerix` (aggregate)
 
-> Repo: `D:/Projects/triggerix/packages/triggerix/`
+> Repo: `triggerix/packages/triggerix/`
 
 Re-exports `core` + `schema` + `json-schema` + `validator` + `runtime`. **Deliberately excludes** `registry` and `editor` (those are opt-in extensions).
 
 ### `@triggerix-ai/registry`
 
-> Repo: `D:/Projects/triggerix-ai/packages/registry/` · Deps: `@triggerix/registry`
+> Repo: `triggerix-ai/packages/registry/` · Deps: `@triggerix/registry`
 
 AI metadata for events/actions/conditions — extends `BaseRegistry` with descriptions, label, params schema, etc.
 
@@ -131,7 +131,7 @@ AI metadata for events/actions/conditions — extends `BaseRegistry` with descri
 
 ### `@triggerix-ai/component`
 
-> Repo: `D:/Projects/triggerix-ai/packages/component/` · Zero runtime deps
+> Repo: `triggerix-ai/packages/component/` · Zero runtime deps
 
 Component protocol layer — `ComponentDef<T>`, `ComponentRegistry`, `BaseRenderer<T>`, `Renderer<T>`, renderer-agnostic `mount()`, and the renderer context (`appendChild`/`removeChild`) abstraction. **Zero runtime deps**; concrete renderers live downstream.
 
@@ -142,7 +142,7 @@ Component protocol layer — `ComponentDef<T>`, `ComponentRegistry`, `BaseRender
 
 ### `@triggerix-ai/schema`
 
-> Repo: `D:/Projects/triggerix-ai/packages/schema/` · Deps: `@triggerix/core`, `@triggerix-ai/component`, `@triggerix-ai/registry`
+> Repo: `triggerix-ai/packages/schema/` · Deps: `@triggerix/core`, `@triggerix-ai/component`, `@triggerix-ai/registry`
 
 JSON Schema generator for AI tool inputs. Supports both trigger-only mode and component+trigger mode; constrains enum IDs to the registered catalog.
 
@@ -150,7 +150,7 @@ JSON Schema generator for AI tool inputs. Supports both trigger-only mode and co
 
 ### `@triggerix-ai/prompt`
 
-> Repo: `D:/Projects/triggerix-ai/packages/prompt/` · Deps: `@triggerix-ai/component`, `@triggerix-ai/registry`
+> Repo: `triggerix-ai/packages/prompt/` · Deps: `@triggerix-ai/component`, `@triggerix-ai/registry`
 
 System prompt builder. Concatenates `BASE_SYSTEM_PROMPT` (static protocol spec) with dynamic catalog sections (events, actions, conditions, components, reverse component→event index).
 
@@ -158,7 +158,7 @@ System prompt builder. Concatenates `BASE_SYSTEM_PROMPT` (static protocol spec) 
 
 ### `@triggerix-ai/fn`
 
-> Repo: `D:/Projects/triggerix-ai/packages/fn/` · Deps: all `@triggerix-ai/*`
+> Repo: `triggerix-ai/packages/fn/` · Deps: all `@triggerix-ai/*`
 
 One-call Function Calling definition — bundles prompt + tools into a single object ready for any LLM SDK.
 
@@ -166,7 +166,7 @@ One-call Function Calling definition — bundles prompt + tools into a single ob
 
 ### `triggerix-ai` (aggregate)
 
-> Repo: `D:/Projects/triggerix-ai/packages/triggerix-ai/`
+> Repo: `triggerix-ai/packages/triggerix-ai/`
 
 Facade re-export of all 5 `@triggerix-ai/*` packages. Single import line for consumers.
 
@@ -176,9 +176,9 @@ Three more internal packages live in their own repos:
 
 | Package | Repo | Role |
 |---|---|---|
-| `triggerix-editor-vue` | `D:/Projects/triggerix-editor-vue/` | Vue 3 binding for `@triggerix/editor` — `useEditor`/`useEditorState`/`provideEditor`/`injectEditor`. Zero deps beyond Vue + `@triggerix/editor`. |
-| `triggerix-editor-preset-war3` | `D:/Projects/triggerix-editor-preset-war3/` | War3-style template/slot editor preset — `createWar3Editor`, `defineWar3Preset`, `defineLeafTool`, `defineCompositeTool`, full War3 editor surface. Deps: `@triggerix/core`, `@triggerix/editor`. |
-| `triggerix-ai-component-native` | `D:/Projects/triggerix-ai-component-native/` | Reference DOM renderer — 8 unstyled components, `NativeComponentDef`, `mountNative`, `nativeRendererContext`. Deps: `@triggerix-ai/component`, `@triggerix/core`. |
+| `triggerix-editor-vue` | `triggerix-editor-vue/` | Vue 3 binding for `@triggerix/editor` — `useEditor`/`useEditorState`/`provideEditor`/`injectEditor`. Zero deps beyond Vue + `@triggerix/editor`. |
+| `triggerix-editor-preset-war3` | `triggerix-editor-preset-war3/` | War3-style template/slot editor preset — `createWar3Editor`, `defineWar3Preset`, `defineLeafTool`, `defineCompositeTool`, full War3 editor surface. Deps: `@triggerix/core`, `@triggerix/editor`. |
+| `triggerix-ai-component-native` | `triggerix-ai-component-native/` | Reference DOM renderer — 8 unstyled components, `NativeComponentDef`, `mountNative`, `nativeRendererContext`. Deps: `@triggerix-ai/component`, `@triggerix/core`. |
 
 See [`projects.md`](./projects.md) for full detail on each.
 

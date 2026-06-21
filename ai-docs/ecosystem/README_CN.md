@@ -1,12 +1,12 @@
 # Triggerix 生态
 
-本文档是对 `D:/Projects` 下所有 `triggerix-*` 仓库以及它们依赖的所有库（内部 + 外部）的汇总梳理，并补充了外部库对应的官方文档链接与能力摘要。
+本文档是对所有 `triggerix-*` 仓库以及它们依赖的所有库（内部 + 外部）的汇总梳理，并补充了外部库对应的官方文档链接与能力摘要。
 
 无论是给人类还是 AI 助手查阅，这都是一份"权威地图"。当需要确认"哪个包负责 X"、"哪些项目在用 Y"、"库 Z 到底干什么"时，从这里开始。
 
 ## 目录
 
-- [项目列表](projects.md) —— 每个 `D:/Projects/triggerix*` 仓库一节
+- [项目列表](projects.md) —— 每个仓库一节
   - [triggerix](projects.md#triggerix) —— 核心 monorepo（8 个包，ECA 引擎）
   - [triggerix-ai](projects.md#triggerix-ai) —— AI 生成层 monorepo（6 个包）
   - [triggerix-ai-component-native](projects.md#triggerix-ai-component-native) —— DOM 渲染器
@@ -50,10 +50,10 @@ Triggerix 生态实现了一个三层 AI-UI 体系中的"中间层"：
 
 ## 仓库布局
 
-`D:/Projects/` 下共有六个仓库。每个都是独立的 pnpm workspace 或单包仓库；仓库间的依赖通过已发布 npm 版本（`^` 范围）在各自 manifest 中声明。
+生态共有六个相互独立的仓库。每个都是独立的 pnpm workspace 或单包仓库；仓库间的依赖通过已发布 npm 版本（`^` 范围）在各自 manifest 中声明。
 
 ```
-D:/Projects/
+<root>/
 ├── triggerix/                       # 核心 monorepo —— ECA 引擎
 │   └── packages/{core, schema, json-schema, validator,
 │                  runtime, registry, editor, triggerix}
